@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../model/User');
 const Verification = require('../model/Verification')
 const createError = require('../utils/createError')
+const sendVerification = require('../utils/sendVerification')
 
 exports.signup=async(req,res,next)=>{
   const {username,name,email,password} = req.body
@@ -81,6 +82,8 @@ exports.signin=async(req,res,next)=>{
 exports.sendVerificationEmail=async(req,res,next)=>{
   const {id} = req.user
   try{
+    //FIND USER
+    const user = await User.findOne({id})
     //GENERATE RANDOM NUMBER
     const verifyNumber = Math.floor(Math.random() * 900000)
 
@@ -118,11 +121,12 @@ exports.sendVerificationEmail=async(req,res,next)=>{
         if(err){
           next(createError(403,err.message));
         }else{
-          res.status(200).json({
-            success: true,
-            status: 200,
-            message: "Verification code send successfully!"
-          })
+          sendVerification(user.email,id,verifyNumber,req,res,next)
+          // res.status(200).json({
+          //   success: true,
+          //   status: 200,
+          //   message: "Verification code send successfully!"
+          // })
         }
       })
     }
@@ -150,7 +154,7 @@ exports.verifyEmail=async(req,res,next)=>{
     //VALID CODE
     const isValid = await bcrypt.compare(code,findCode.verifyCode)
     if(!isValid) return next(createError(403,"Wrong verifiaction code !"))
-    
+
     User.updateOne({id:id},{$set:{
       isVerified : true
     }},(err)=>{
