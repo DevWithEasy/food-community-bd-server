@@ -71,7 +71,7 @@ exports.signin=async(req,res,next)=>{
     }).status(200).json({
       success : true,
       status : 200,
-      message : others
+      data : others
     })
 
   }catch(err){
@@ -102,11 +102,7 @@ exports.sendVerificationEmail=async(req,res,next)=>{
         if(err){
           next(createError(403,err.message));
         }else{
-          res.status(200).json({
-            success: true,
-            status: 200,
-            message: "Verification code send successfully!"
-          })
+          sendVerification("verify",user.email,verifyNumber,res,next)
         }
       })
     }else{
@@ -121,12 +117,7 @@ exports.sendVerificationEmail=async(req,res,next)=>{
         if(err){
           next(createError(403,err.message));
         }else{
-          sendVerification(user.email,id,verifyNumber,req,res,next)
-          // res.status(200).json({
-          //   success: true,
-          //   status: 200,
-          //   message: "Verification code send successfully!"
-          // })
+          sendVerification("verify",user.email,verifyNumber,res,next)
         }
       })
     }
@@ -134,6 +125,7 @@ exports.sendVerificationEmail=async(req,res,next)=>{
     res.status(500).send(err.message)
   }
 }
+
 exports.verifyEmail=async(req,res,next)=>{
   const {id} = req.user
   const {userId,code} = req.params
@@ -160,6 +152,115 @@ exports.verifyEmail=async(req,res,next)=>{
     }},(err)=>{
       if(err) return next(createError(403,"Verification failed"))
       Verification.deleteMany({userId:id},(err)=>{
+        if(err){
+          next(createError(403,"Something went wrong"))
+        }else{
+          res.status(200).json({
+            success: true,
+            status: 200,
+            message: "Verification successfully!"
+          })
+        }
+      })
+    })
+  }catch(err){
+    res.status(500).send(err.message)
+  }
+}
+
+exports.findUser = async(req,res,next)=>{
+  const {q} = req.query
+  try{
+    //FIND USER IN DATABASE
+    const user = await User.findOne({$or:[{email:q},{username:q}]})
+
+    //IF USER IS NOT IN DATABASE
+    if(!user) return next(createError(404,"User not found"))
+    const {password,...others} = user._doc
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: others
+    })
+
+  }catch(err){
+    res.status(500).send(err.message)
+  }
+}
+
+exports.forgetPassword = async(req,res,next)=>{
+  const {userId} = req.params
+  try{
+    //FIND USER IN DATABASE
+    const user = await User.findOne({id: userId})
+
+    //GENERATE RANDOM NUMBER
+    const verifyNumber = Math.floor(Math.random() * 900000)
+
+    //GENERATE HASHED CODE
+    const hashCode = await bcrypt.hash(verifyNumber.toString(),10)
+
+    //FIND CODE IN DATABASE
+    const findCode = await Verification.findOne({userId})
+
+    if(findCode){
+      //IF FIND IN DATABASE
+      Verification.updateOne({userId:user._id,},{$set:{
+        verifyCode : hashCode,
+        expiresAt : Date.now() + 21600000
+      }},(err)=>{
+        if(err){
+          next(createError(403,err.message));
+        }else{
+          sendVerification("forget",user.email,verifyNumber,res,next)
+        }
+      })
+    }else{
+      //IF CAN'T FIND IN DATABASE
+      const newVerification = new Verification({
+        userId,
+        verifyCode : hashCode
+      })
+
+      //SAVE VERIFICATION CODE IN DATABASE
+      newVerification.save(err=>{
+        if(err){
+          next(createError(403,err.message));
+        }else{
+          sendVerification("verify",user.email,verifyNumber,res,next)
+        }
+      })
+    }
+
+  }catch(err){
+    res.status(500).send(err.message)
+  }
+}
+
+exports.forgetVerify = async(req,res,next) =>{
+  const {userId,code,password} = req.params
+  try{
+    if(!userId || !code || !password) return next(createError(400,"credentials not found"))
+
+    const findCode = await Verification.findOne({userId:userId})
+
+    //CODE NOT FOUND IN DATABASE
+    if(!findCode) return next(createError(404,"Verifiaction code not found !"))
+
+    //EXPIRE CODE
+    if(findCode.expiresAt < Date.now()) return next(createError(403,"Verification Code is expired"))
+
+    //VALID CODE
+    const isValid = await bcrypt.compare(code,findCode.verifyCode)
+    if(!isValid) return next(createError(403,"Wrong verifiaction code !"))
+
+    //NEW PASSWORD GENERATE
+    const newPassword = await bcrypt.hash(password,10)
+    User.updateOne({id:userId},{$set:{
+      password : newPassword
+    }},(err)=>{
+      if(err) return next(createError(403,"Verification failed"))
+      Verification.deleteMany({userId:userId},(err)=>{
         if(err){
           next(createError(403,"Something went wrong"))
         }else{

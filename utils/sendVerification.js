@@ -1,22 +1,29 @@
-const nodemailer = require("nodemailer");
 const createError = require("./createError");
+const transporter = require("./mailSystem/transporter");
 
-const sendVerification = (reciever,userId,code,req,res,next) =>{
-  //CREATE TRANSPORTER
-  const transporter = nodemailer.createTransport({
-    service:"gmail",
-    auth:{
-      user : process.env.EMAIL,
-      pass : process.env.PASSWORD
+const sendVerification = (type,reciever,code,res,next) =>{
+  let mailOptions
+  if(type === "verify"){
+    mailOptions = {
+      from : "devwitheasy@gmail.com",
+      to : reciever,
+      subject : "FoodCommunityBD Account Verification Code",
+      html : `<h1>Wellcome to FoodCommunityBD</h1><p>Please verify your account.</p><p>Verification code: <b>${code}</b></p><p>This code is valid for 6 hours.after the code will invalid.</p>`
     }
-  })
-
-  //CREATE MAIL OPTIONS
-  const mailOptions = {
-    from : "devwitheasy@gmail.com",
-    to : reciever,
-    subject : "FoodCommunityBD Account verifiaction",
-    html : `<p>press <a href=${"http://localhost:3001/api/auth/verify/" + userId + "/" + code}>Here</a></p>`
+  }else if(type === "forget"){
+    mailOptions = {
+      from : "devwitheasy@gmail.com",
+      to : reciever,
+      subject : "FoodCommunityBD Forget Password",
+      html : `<h1>Wellcome to FoodCommunityBD</h1><p>You try get a new password.</p><p>Verification code: <b>${code}</b></p><p>This code is valid for 6 hours.after the code will invalid.</p>`
+    }
+  }else if(type === "twoFactor"){
+    mailOptions = {
+      from : "devwitheasy@gmail.com",
+      to : reciever,
+      subject : "FoodCommunityBD Two factor authentication code",
+      html : `<h1>Wellcome to FoodCommunityBD</h1><p>You try to login your account.</p><p>Two factor authentication code: <b>${code}</b></p><p>This code is valid for 6 hours.after the code will invalid.</p>`
+    }
   }
 
   //SEND EMAIL
