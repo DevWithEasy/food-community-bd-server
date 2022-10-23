@@ -29,6 +29,14 @@ const userSchema = mongoose.Schema({
       type : Boolean,
       default : false
     },
+    image: {
+      public_id : {
+        type : String
+      },
+      url: {
+        type : String
+      }
+    },
     followers:[
       {
         type : mongoose.Schema.Types.ObjectId,

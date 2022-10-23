@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 const aboutSchema = mongoose.Schema({
     userId : {
-      type : Mongoose.Schema.Types.ObjectId,
+      type : mongoose.Schema.Types.ObjectId,
       ref : "User"
     },
-    dob: String,
+    dob: Date,
     fathersName: String,
     mothersName: String,
     gender: String,
@@ -13,68 +13,56 @@ const aboutSchema = mongoose.Schema({
     nidNo:String,
     nationality:String,
     phone: String,
-    image: String,
     facebook: String,
     linkedin : String,
     cv:String,
     status:String,
     presentAddress: {
-    district: String,
-    upzilla: String,
-    area: String
+        district: String,
+        upzilla: String,
+        area: String
     },
     permanentAddress: {
-    district: String,
-    upzilla: String,
-    po: String,
-    poCode: String,
-    area: String
+        district: String,
+        upzilla: String,
+        postOffice: String,
+        postCode: String,
+        area: String
     },
-    presentCompany: {
-    name: String,
-    designation:String,
-    location: String,
-    from: String,
-    to: String
-    },
-    previousJob: [
+    jobs: [
         {
-            name:String,
-            designation:String,
-            location:String,
-            from:Date,
-            to:Date,
+            name: String,
+            designation: String,
+            location: String,
+            from: Date,
+            to: Date,
+            current : {
+              type: Boolean,
+              default: false
+            }
         }
     ],
-    responsibility:[String],
-    ssc: {
-    name: String,
-    season: String,
-    passingYear: String,
-    group: String,
-    result: String
-    },
-    collage: {
-    name: String,
-    season: String,
-    passingYear: String,
-    group: String,
-    result: String
-    },
-    bsc: {
-    name: String,
-    season: String,
-    passingYear: String,
-    group: String,
-    result: String
-    },
-    msc: {
-    name: String,
-    season: String,
-    passingYear: String,
-    group: String,
-    result: String
-    }
+    responsibility: String,
+    highSchool:[
+      {
+        name: String,
+        degree: String,
+        season: String,
+        passingYear: String,
+        group: String,
+        result: String
+      }
+    ],
+    collage: [
+      {
+        name: String,
+        degree: String,
+        season: String,
+        passingYear: String,
+        group: String,
+        result: String
+      }
+    ]
 })
 
 const About = mongoose.model('About',aboutSchema)

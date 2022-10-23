@@ -1,9 +1,12 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../model/User');
+const About = require('../model/About');
 const Verification = require('../model/Verification')
 const createError = require('../utils/createError')
 const sendVerification = require('../utils/sendVerification')
+const aboutObject = require('../utils/aboutObject')
+const cloudinary = require('../utils/cloudinary')
 
 exports.signup=async(req,res,next)=>{
   const {username,name,email,password} = req.body
@@ -102,7 +105,12 @@ exports.sendVerificationEmail=async(req,res,next)=>{
         if(err){
           next(createError(403,err.message));
         }else{
-          sendVerification("verify",user.email,verifyNumber,res,next)
+          sendVerification({
+              from : "devwitheasy@gmail.com",
+              to : user.email,
+              subject : "FoodCommunityBD Account Verification Code",
+              html : `<h1>Wellcome to FoodCommunityBD</h1><p>Please verify your account.</p><p>Verification code: <b>${verifyNumber}</b></p><p>This code is valid for 6 hours.after the code will invalid.</p>`
+          },res,next)
         }
       })
     }else{
@@ -117,7 +125,12 @@ exports.sendVerificationEmail=async(req,res,next)=>{
         if(err){
           next(createError(403,err.message));
         }else{
-          sendVerification("verify",user.email,verifyNumber,res,next)
+          sendVerification({
+              from : "devwitheasy@gmail.com",
+              to : user.email,
+              subject : "FoodCommunityBD Account Verification Code",
+              html : `<h1>Wellcome to FoodCommunityBD</h1><p>Please verify your account.</p><p>Verification code: <b>${verifyNumber}</b></p><p>This code is valid for 6 hours.after the code will invalid.</p>`
+          },res,next)
         }
       })
     }
@@ -128,11 +141,11 @@ exports.sendVerificationEmail=async(req,res,next)=>{
 
 exports.verifyEmail=async(req,res,next)=>{
   const {id} = req.user
-  const {userId,code} = req.params
+  const {code} = req.params
   try{
-    if(!userId || !code) return next(createError(400,"credentials not found"))
+    if(!code) return next(createError(400,"credentials not found"))
 
-    const findCode = await Verification.findOne({userId:userId})
+    const findCode = await Verification.findOne({userId:id})
 
     //CODE NOT FOUND IN DATABASE
     if(!findCode) return next(createError(404,"Verifiaction code not found !"))
@@ -147,6 +160,7 @@ exports.verifyEmail=async(req,res,next)=>{
     const isValid = await bcrypt.compare(code,findCode.verifyCode)
     if(!isValid) return next(createError(403,"Wrong verifiaction code !"))
 
+    //UPDATE VERIFY STATUS
     User.updateOne({id:id},{$set:{
       isVerified : true
     }},(err)=>{
@@ -163,6 +177,11 @@ exports.verifyEmail=async(req,res,next)=>{
         }
       })
     })
+    //CREATE ABOUT PAGE
+    const newAbout = new About({
+      ...aboutObject,userId : id
+    })
+    newAbout.save()
   }catch(err){
     res.status(500).send(err.message)
   }
@@ -212,7 +231,12 @@ exports.forgetPassword = async(req,res,next)=>{
         if(err){
           next(createError(403,err.message));
         }else{
-          sendVerification("forget",user.email,verifyNumber,res,next)
+          sendVerification({
+              from : "devwitheasy@gmail.com",
+              to : user.email,
+              subject : "FoodCommunityBD Account forget Password recovery Code",
+              html : `<h1>Wellcome to FoodCommunityBD</h1><p>Please verify your account.</p><p>Verification code: <b>${verifyNumber}</b></p><p>This code is valid for 6 hours.after the code will invalid.</p>`
+          },res,next)
         }
       })
     }else{
@@ -227,7 +251,12 @@ exports.forgetPassword = async(req,res,next)=>{
         if(err){
           next(createError(403,err.message));
         }else{
-          sendVerification("verify",user.email,verifyNumber,res,next)
+          sendVerification({
+              from : "devwitheasy@gmail.com",
+              to : user.email,
+              subject : "FoodCommunityBD Account forget Password recovery Code",
+              html : `<h1>Wellcome to FoodCommunityBD</h1><p>Please verify your account.</p><p>Verification code: <b>${verifyNumber}</b></p><p>This code is valid for 6 hours.after the code will invalid.</p>`
+          },res,next)
         }
       })
     }
@@ -267,12 +296,55 @@ exports.forgetVerify = async(req,res,next) =>{
           res.status(200).json({
             success: true,
             status: 200,
-            message: "Verification successfully!"
+            message: "Verification successfully With mew password!"
           })
         }
       })
     })
   }catch(err){
+    res.status(500).send(err.message)
+  }
+}
+
+exports.profileUpload = async(req,res,next) =>{
+  const {id} = req.user
+  try {
+    //IF USER IS NOT UPLOAD PHOTO
+    if(!req.file) return next(createError(404,"File not found"))
+
+    //FIND LOGGED USER
+    const user = await User.findOne({id})
+
+    //DESTUCTURE IMG PUBLIC_ID THAT USING TO DELETE
+    const imgId = user.image.public_id
+
+    //CLOUDINARY DELETE FUNCTION
+    if(imgId){
+      await cloudinary.uploader.destroy(imgId)
+    }
+
+    //UPLOAD IMG
+    const result = await cloudinary.uploader.upload(req.file.path,{
+      folder : "profilePhoto",
+      resource_type : "auto"
+    })
+
+    //UPDATE USER
+    User.updateOne({id},{$set:{
+      "image.url" : result.url,
+      "image.public_id" : result.public_id
+    }},(err)=>{
+      if(err){
+        next(createError(403,err.message))
+      }else{
+        res.status(200).json({
+          success: true,
+          status: 200,
+          message: "Image uploaded successfully"
+        })
+      }
+    })
+  } catch (err) {
     res.status(500).send(err.message)
   }
 }
