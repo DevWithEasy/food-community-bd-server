@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 const userSchema = mongoose.Schema({
     username:{
@@ -21,9 +22,7 @@ const userSchema = mongoose.Schema({
     },
     password:{
       type : String,
-      required : true,
       trim : true,
-      min : 6,
     },
     isVerified : {
       type : Boolean,
@@ -37,18 +36,27 @@ const userSchema = mongoose.Schema({
         type : String
       }
     },
-    followers:[
+    friendRequest:[
       {
         type : mongoose.Schema.Types.ObjectId,
         ref : "User"
       }
     ],
-    followings:[
+    friends:[
       {
         type : mongoose.Schema.Types.ObjectId,
         ref : "User"
       }
-    ]
+    ],
+    fromgoogle : {
+      type : Boolean,
+      default : false
+    },
+    type :{
+      type : String,
+      emun : ["Admin","User","Moderator"],
+      default : "User"
+    }
 },{timestamps : true})
 
 const User = mongoose.model('User',userSchema)

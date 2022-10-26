@@ -1,15 +1,20 @@
 const router = require("express").Router()
-const {signup,signin,sendVerificationEmail,verifyEmail,findUser,forgetPassword,forgetVerify,profileUpload} = require("../controllers/authControllers")
+const {signup,signin,googleAuth,findUser,profileUpload,sendVerificationEmail,verifyEmail,forgetPassword,forgetVerify,deleteAccount} = require("../controllers/authControllers")
 const verifyToken = require("../utils/verifyToken")
 const upload = require("../middlewares/multer")
 
 router.post("/signup",signup)
-router.post("/signin",signin)
+      .post("/signin",signin)
+      .post("/google",googleAuth)
+      .get("/find",findUser)
+      .post("/image",verifyToken,upload.single("image"),profileUpload)
+
 router.post("/verify",verifyToken,sendVerificationEmail)
-router.put("/verify/:code",verifyToken,verifyEmail)
-router.get("/find",findUser)
+      .put("/verify/:code",verifyToken,verifyEmail)
+
 router.post("/forget/:userId",forgetPassword)
-router.put("/forgetVerify/:userId/:code/:password",forgetVerify)
-router.post("/image",verifyToken,upload.single("image"),profileUpload)
+      .put("/forgetVerify/:userId/:code/:password",forgetVerify)
+
+router.delete("/delete",verifyToken,deleteAccount)
 
 module.exports = router

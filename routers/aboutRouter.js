@@ -3,21 +3,21 @@ const verifyToken = require("../utils/verifyToken")
 const {getAbout,updateAbout,updatePresent,updateParmanent,addHighSchool,updateHighSchool,deleteHighSchool,addCollage,updateCollage,deleteCollage,addJob,updateJob,deleteJob} = require("../controllers/aboutControllers")
 
 router.get("/me",verifyToken,getAbout)
-router.put("/me",verifyToken,updateAbout)
+      .put("/me",verifyToken,updateAbout)
 
-router.put("/presentAddress",verifyToken,updatePresent)
-router.put("/permanentAddress",verifyToken,updateParmanent)
+router.put("/present_address",verifyToken,updatePresent)
+      .put("/permanent_address",verifyToken,updateParmanent)
 
-router.put("/highSchool",verifyToken,addHighSchool)
-router.put("/highSchool/:id",verifyToken,updateHighSchool)
-router.delete("/highSchool/:id",verifyToken,deleteHighSchool)
+router.put("/high_school",verifyToken,addHighSchool)
+      .put("/high_school/:id",verifyToken,updateHighSchool)
+      .delete("/high_school/:id",verifyToken,deleteHighSchool)
 
 router.put("/collage",verifyToken,addCollage)
-router.put("/collage/:id",verifyToken,updateCollage)
-router.delete("/collage/:id",verifyToken,deleteCollage)
+      .put("/collage/:id",verifyToken,updateCollage)
+      .delete("/collage/:id",verifyToken,deleteCollage)
 
 router.put("/job",verifyToken,addJob)
-router.put("/job/:id",verifyToken,updateJob)
-router.delete("/job/:id",verifyToken,deleteJob)
+      .put("/job/:id",verifyToken,updateJob)
+      .delete("/job/:id",verifyToken,deleteJob)
 
 module.exports = router

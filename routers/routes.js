@@ -11,6 +11,10 @@ const routes = [
     handler : authRouter
   },
   {
+    path: "/api/friend",
+    handler : authRouter
+  },
+  {
     path: "/api/about",
     handler : aboutRouter
   },
