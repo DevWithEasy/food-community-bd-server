@@ -98,7 +98,8 @@ exports.googleAuth = async(req,res,next)=>{
     }else{
       const newUser = new User({
         ...req.body,
-        fromgoogle : true
+        fromgoogle : true,
+        isVerified : true
       })
       const savedUser = await newUSer.save()
       const token = await jwt.sign({id:savedUser._id},process.env.JWT_SECRET)
@@ -119,7 +120,7 @@ exports.findUser = async(req,res,next)=>{
   const {q} = req.query
   try{
     //FIND USER IN DATABASE
-    const user = await User.findOne({$or:[{email:q},{username:q}]})
+    const user = await User.findOne({$or:[{"email":q},{"username":q}]})
 
     //IF USER IS NOT IN DATABASE
     if(!user) return next(createError(404,"User not found"))
