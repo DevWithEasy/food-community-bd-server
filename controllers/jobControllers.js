@@ -43,9 +43,8 @@ exports.getJob =async(req,res,next)=>{
   }
 
   exports.getAllJob =async(req,res,next)=>{
-        const {id} = req.params
         try{
-          const jobs = await Job.find({})
+          const jobs = await Job.find()
           if(!jobs) return next(createError(404,"Not Jobs Available now."))
           res.status(200).json({
             success : true,

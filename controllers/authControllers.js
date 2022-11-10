@@ -34,13 +34,14 @@ exports.signup=async(req,res,next)=>{
     })
 
     //USER SAVE IN DATABASE
-    newUser.save(err=>{
+    newUser.save((err,data)=>{
       if(err){
         next(createError(403,err.message));
       }else{
         res.status(200).json({
           success: true,
           status: 200,
+          data : data,
           message: "Account created successfully!"
         })
       }
@@ -69,12 +70,11 @@ exports.signin=async(req,res,next)=>{
     //GENERATE JWT TOKEN
     const token = await jwt.sign({id:user._id},process.env.JWT_SECRET)
 
-    res.cookie("access_token",token,{
-      httpOnly : true
-    }).status(200).json({
+    res.status(200).json({
       success : true,
       status : 200,
-      data : others
+      data : others,
+      token
     })
 
   }catch(err){
@@ -102,6 +102,13 @@ exports.googleAuth = async(req,res,next)=>{
         isVerified : true
       })
       const savedUser = await newUSer.save()
+
+      //CREATE ABOUT PAGE
+      const newAbout = new About({
+        ...aboutObject,userId : savedUser._id
+      })
+      await newAbout.save()
+
       const token = await jwt.sign({id:savedUser._id},process.env.JWT_SECRET)
       res.cookie("access_token",token,{
         httpOnly : true
@@ -155,7 +162,7 @@ exports.profileUpload = async(req,res,next) =>{
 
     //UPLOAD IMG
     const result = await cloudinary.uploader.upload(req.file.path,{
-      folder : "profilePhoto",
+      folder : "FoodCommunityBD/profilePhoto",
       resource_type : "auto"
     })
 
@@ -208,6 +215,12 @@ exports.sendVerificationEmail=async(req,res,next)=>{
               subject : "FoodCommunityBD Account Verification Code",
               html : `<h1>Wellcome to FoodCommunityBD</h1><p>Please verify your account.</p><p>Verification code: <b>${verifyNumber}</b></p><p>This code is valid for 6 hours.after the code will invalid.</p>`
           },res,next)
+
+          res.status(200).json({
+            success: true,
+            status: 200,
+            message: "Verification sent successfully!"
+          })
         }
       })
     }else{
@@ -228,6 +241,12 @@ exports.sendVerificationEmail=async(req,res,next)=>{
               subject : "FoodCommunityBD Account Verification Code",
               html : `<h1>Wellcome to FoodCommunityBD</h1><p>Please verify your account.</p><p>Verification code: <b>${verifyNumber}</b></p><p>This code is valid for 6 hours.after the code will invalid.</p>`
           },res,next)
+          
+          res.status(200).json({
+            success: true,
+            status: 200,
+            message: "Verification sent successfully!"
+          })
         }
       })
     }
@@ -337,6 +356,29 @@ exports.forgetPassword = async(req,res,next)=>{
         }
       })
     }
+
+  }catch(err){
+    res.status(500).send(err.message)
+  }
+}
+
+exports.checkVerifyCode = async(req,res,next)=>{
+  const {userId,code} = req.params
+  try{
+    //FIND CODE IN DATABASE
+    const findCode = await Verification.findOne({userId:userId})
+    //CODE NOT FOUND IN DATABASE
+    if(!findCode) return next(createError(404,"Verifiaction code not found !"))
+    //EXPIRE CODE
+    if(findCode.expiresAt < Date.now()) return next(createError(403,"Verification Code is expired"))
+    //VALID CODE
+    const isValid = await bcrypt.compare(code,findCode.verifyCode)
+    if(!isValid) return next(createError(403,"Wrong verifiaction code !"))
+    res.status(200).json({
+      success: true,
+      status: 200,
+      message: "Verified Code"
+    })
 
   }catch(err){
     res.status(500).send(err.message)

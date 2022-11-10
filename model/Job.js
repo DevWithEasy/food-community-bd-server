@@ -28,7 +28,11 @@ const jobSchema = mongoose.Schema({
     type : String,
     required : true
   },
-  jobContaxt:{
+  workPlace:{
+    type : String,
+    required : true
+  },
+  jobContext:{
     type : String
   },
   education : {
@@ -42,13 +46,8 @@ const jobSchema = mongoose.Schema({
   additional : {
     type : String
   },
-  workPlace:{
-    type : String,
-    required : true
-  },
   others : {
     type : String,
-    required : true
   },
   contact : {
     type : String,

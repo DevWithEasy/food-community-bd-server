@@ -9,7 +9,7 @@ exports.createPost =async(req,res,next)=>{
       if(req.file){
         //UPLOAD PHOTO
         const result = await cloudinary.uploader.upload(req.file.path,{
-          folder : "postImage",
+          folder : "FoodCommunityBD/postImage",
           resource_type : "auto"
         })
 

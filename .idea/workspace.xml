@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f420143f-e064-481f-92ff-5b7dbe2d9d34" name="Changes" comment="" />
+    <list default="true" id="f420143f-e064-481f-92ff-5b7dbe2d9d34" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/controllers/authControllers.js" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/authControllers.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/postControllers.js" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/postControllers.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="2GJCPhESJ3HjKmsJaWXBVO3MmiP" />
   <component name="ProjectViewState">
@@ -17,7 +23,8 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "D:/tft-foundation-api",
+    "last_opened_file_path": "D:/WebDevelopment/React/hot-onion-resturent",
+    "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -30,8 +37,12 @@
       <option name="presentableId" value="Default" />
       <updated>1666097300727</updated>
       <workItem from="1666097325901" duration="59000" />
+      <workItem from="1667113265667" duration="127000" />
     </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
